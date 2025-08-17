@@ -204,7 +204,7 @@ void bp_t::update_cycles_on_wrong_path(const uint64_t cycles_on_wrong_path)
 }
 
 #define BP_OUTPUT(str, n, m, i) \
-    printf("%s%10ld %10ld %8.4lf%% %8.4lf\n", (str), (n), (m), 100.0*((double)(m)/(double)(n)), 1000.0*((double)(m)/(double)(i)))
+   printf("%s%10llu %10llu %8.4lf%% %8.4lf\n", (str), (unsigned long long)(n), (unsigned long long)(m), 100.0*((double)(m)/(double)(n)), 1000.0*((double)(m)/(double)(i)))
 
 void bp_t::output(const uint64_t num_inst)
 {
@@ -263,7 +263,7 @@ void bp_t::output_periodic_info(const std::vector<uint64_t>&num_insts_per_epoch,
       }
       const double cyc_wp_avg =  (my_br_mispred_count == 0) ? 0.00 : (double)my_wpc_count/(double)my_br_mispred_count;
       const double cyc_wp_pki =  (double)my_wpc_count*1000/(double)my_instr_count;
-      printf("%12ld %12ld %8.4f %10ld %10ld %8.4lf %12.4lf %8.4lf%% %8.4lf %10ld %10.4lf %10.4lf\n", my_instr_count, my_cycle_count, (double)my_instr_count/(double)my_cycle_count, my_br_count, my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), my_wpc_count, cyc_wp_avg, cyc_wp_pki);
+   printf("%12llu %12llu %8.4f %10llu %10llu %8.4lf %12.4lf %8.4lf%% %8.4lf %10llu %10.4lf %10.4lf\n", (unsigned long long)my_instr_count, (unsigned long long)my_cycle_count, (double)my_instr_count/(double)my_cycle_count, (unsigned long long)my_br_count, (unsigned long long)my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), (unsigned long long)my_wpc_count, cyc_wp_avg, cyc_wp_pki);
       printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
    }
 
@@ -290,7 +290,7 @@ void bp_t::output_periodic_info(const std::vector<uint64_t>&num_insts_per_epoch,
       }
       const double cyc_wp_avg =  (my_br_mispred_count == 0) ? 0.00 : (double)my_wpc_count/(double)my_br_mispred_count;
       const double cyc_wp_pki =  (double)my_wpc_count*1000/(double)my_instr_count;
-      printf("%12ld %12ld %8.4f %10ld %10ld %8.4lf %12.4lf %8.4lf%% %8.4lf %10ld %10.4lf %10.4lf\n", my_instr_count, my_cycle_count, (double)my_instr_count/(double)my_cycle_count, my_br_count, my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), my_wpc_count, cyc_wp_avg, cyc_wp_pki);
+   printf("%12llu %12llu %8.4f %10llu %10llu %8.4lf %12.4lf %8.4lf%% %8.4lf %10llu %10.4lf %10.4lf\n", (unsigned long long)my_instr_count, (unsigned long long)my_cycle_count, (double)my_instr_count/(double)my_cycle_count, (unsigned long long)my_br_count, (unsigned long long)my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), (unsigned long long)my_wpc_count, cyc_wp_avg, cyc_wp_pki);
       printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
    }
 
@@ -318,7 +318,7 @@ void bp_t::output_periodic_info(const std::vector<uint64_t>&num_insts_per_epoch,
       }
       const double cyc_wp_avg =  (my_br_mispred_count == 0) ? 0.00 : (double)my_wpc_count/(double)my_br_mispred_count;
       const double cyc_wp_pki =  (double)my_wpc_count*1000/(double)my_instr_count;
-      printf("%12ld %12ld %8.4f %10ld %10ld %8.4lf %12.4lf %8.4lf%% %8.4lf %10ld %10.4lf %10.4lf\n", my_instr_count, my_cycle_count, (double)my_instr_count/(double)my_cycle_count, my_br_count, my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), my_wpc_count, cyc_wp_avg, cyc_wp_pki);
+   printf("%12llu %12llu %8.4f %10llu %10llu %8.4lf %12.4lf %8.4lf%% %8.4lf %10llu %10.4lf %10.4lf\n", (unsigned long long)my_instr_count, (unsigned long long)my_cycle_count, (double)my_instr_count/(double)my_cycle_count, (unsigned long long)my_br_count, (unsigned long long)my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), (unsigned long long)my_wpc_count, cyc_wp_avg, cyc_wp_pki);
       printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
    }
 
@@ -346,7 +346,7 @@ void bp_t::output_periodic_info(const std::vector<uint64_t>&num_insts_per_epoch,
       }
       const double cyc_wp_avg =  (my_br_mispred_count == 0) ? 0.00 : (double)my_wpc_count/(double)my_br_mispred_count;
       const double cyc_wp_pki =  (double)my_wpc_count*1000/(double)my_instr_count;
-      printf("%12ld %12ld %8.4f %10ld %10ld %8.4lf %12.4lf %8.4lf%% %8.4lf %10ld %10.4lf %10.4lf\n", my_instr_count, my_cycle_count, (double)my_instr_count/(double)my_cycle_count, my_br_count, my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), my_wpc_count, cyc_wp_avg, cyc_wp_pki);
+   printf("%12llu %12llu %8.4f %10llu %10llu %8.4lf %12.4lf %8.4lf%% %8.4lf %10llu %10.4lf %10.4lf\n", (unsigned long long)my_instr_count, (unsigned long long)my_cycle_count, (double)my_instr_count/(double)my_cycle_count, (unsigned long long)my_br_count, (unsigned long long)my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), (unsigned long long)my_wpc_count, cyc_wp_avg, cyc_wp_pki);
       printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
    }
 
@@ -365,7 +365,7 @@ void bp_t::output_periodic_info(const std::vector<uint64_t>&num_insts_per_epoch,
            const uint64_t my_wpc_count = meas_cycles_on_wrong_path_per_epoch.at(epoch_index);
            const double cyc_wp_avg =  (my_br_mispred_count == 0) ? 0.00 : (double)my_wpc_count/(double)my_br_mispred_count;
            const double cyc_wp_pki =  (double)my_wpc_count*1000/(double)my_instr_count;
-           printf("%5ld %12ld %12ld %8.4f %10ld %10ld %8.4lf %12.4lf %8.4lf%% %8.4lf %10ld %10.4lf %10.4lf\n", epoch_index, my_instr_count, my_cycle_count, (double)my_instr_count/(double)my_cycle_count, my_br_count, my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), my_wpc_count, cyc_wp_avg, cyc_wp_pki);
+           printf("%5llu %12llu %12llu %8.4f %10llu %10llu %8.4lf %12.4lf %8.4lf%% %8.4lf %10llu %10.4lf %10.4lf\n", (unsigned long long)epoch_index, (unsigned long long)my_instr_count, (unsigned long long)my_cycle_count, (double)my_instr_count/(double)my_cycle_count, (unsigned long long)my_br_count, (unsigned long long)my_br_mispred_count, (double)(my_br_count)/(double)(my_cycle_count), (double)(my_br_mispred_count)/(double)(my_cycle_count), 100.0*((double)(my_br_mispred_count)/(double)(my_br_count)), 1000.0*((double)(my_br_mispred_count)/(double)(my_instr_count)), (unsigned long long)my_wpc_count, cyc_wp_avg, cyc_wp_pki);
       }
       printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
    }

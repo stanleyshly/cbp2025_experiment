@@ -212,7 +212,7 @@ int parseargs(int argc, char ** argv)
         if (i < argc)
         {
            uint64_t epoch_size_insts;
-           if (sscanf(argv[i], "%lu", &epoch_size_insts) == 1)
+           if (sscanf(argv[i], "%llu", (unsigned long long*)&epoch_size_insts) == 1)
            {
               EPOCH_SIZE_INSTS = epoch_size_insts;
            }

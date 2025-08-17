@@ -89,7 +89,6 @@ int8_t *PGEHL[PNB];
 #define LNB 3
 int Lm[LNB] = { 11, 6, 3 };
 int8_t LGEHLA[LNB][(1 << LOGLNB)] = { {0} };
-
 int8_t *LGEHL[LNB];
 #define  LOGLOCAL 9
 #define NLOCAL (1<<LOGLOCAL)
@@ -126,6 +125,7 @@ int8_t *TGEHL[TNB];
 #else
 #define LOGSIZEUP 0
 #endif
+// LOGSIZEUPS and related weights
 #define LOGSIZEUPS  (LOGSIZEUP/2)
 int updatethreshold;
 int Pupdatethreshold[(1 << LOGSIZEUP)]; //size is fixed by LOGSIZEUP
@@ -147,6 +147,7 @@ int8_t FirstH, SecondH;
 bool MedConf;           // is the TAGE prediction medium confidence
 
 
+// Counter and buffer widths
 #define CONFWIDTH 7     //for the counters in the choser
 #define HISTBUFFERLENGTH 4096   // we use a 4K entries history buffer to store the branch history (this allows us to explore using history length up to 4K)
 
