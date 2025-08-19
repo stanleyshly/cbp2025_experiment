@@ -1,0 +1,56 @@
+# .gitignore for cbp2025_experiment
+
+# Ignore results and traces folders
+
+# Ignore branch predictors, cbp binary, and traces
+Branch-Predictors/
+cbp
+traces/
+trace_result/
+trace_result_*/
+test_*/
+
+# Ignore IDE and editor settings
+.vscode/
+.idea/
+*.code-workspace
+
+# Ignore build and object files
+*.o
+*.a
+*.so
+*.out
+*.exe
+
+# Ignore editor and OS files
+.DS_Store
+*.swp
+*.swo
+
+# Ignore logs
+*.log
+
+# Ignore Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# Ignore temporary and backup files
+*.tmp
+*.bak
+*.backup
+*~
+.#*
+
+# Ignore compressed files and archives (except sample traces)
+*.tar
+*.zip
+*.7z
+# Note: *.gz files are allowed for sample traces
+
+# Ignore CSV results (but keep reference files)
+results.csv
+**/results.csv

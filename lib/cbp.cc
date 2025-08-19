@@ -35,12 +35,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "resource_schedule.h"
 #include "uarchsim.h"
 #include "parameters.h"
+#include "../cond_branch_predictor_interface.h"
+#include "predictor_type.h"
 
 uarchsim_t *sim;
 
 int parseargs(int argc, char ** argv) 
 {
   int i = 1;
+   PredictorType predictor_type = PredictorType::PRED_TAGE_SC_L;
 
   // read optional flags
   while (i < argc)
@@ -54,6 +57,26 @@ int parseargs(int argc, char ** argv)
      {
         PERFECT_BRANCH_PRED = true;
         i++;
+     }
+     else if (!strcmp(argv[i], "-pred"))
+     {
+        i++;
+        if (i < argc) {
+            if (!strcmp(argv[i], "tage-sc-l")) {
+                predictor_type = PredictorType::PRED_TAGE_SC_L;
+            } else if (!strcmp(argv[i], "onebit")) {
+                predictor_type = PredictorType::PRED_ONEBIT;
+            } else if (!strcmp(argv[i], "twobit")) {
+                predictor_type = PredictorType::PRED_TWOBIT;
+            } else {
+                printf("Unknown predictor type: %s. Use 'tage-sc-l', 'onebit', or 'twobit'.\n", argv[i]);
+                exit(1);
+            }
+            i++;
+        } else {
+            printf("Usage: -pred <tage-sc-l|onebit|twobit>\n");
+            exit(1);
+        }
      }
      //else if (!strcmp(argv[i], "-i"))
      //{
@@ -249,27 +272,18 @@ int parseargs(int argc, char ** argv)
      }
   }
 
+   select_predictor(predictor_type);
+
   if (i < argc) {
      return(i);
   }
   else {
-     //printf("usage:\t%s\n[optional: -d to enable perfect data cache]\n\t[optional: -b to enable perfect branch prediction (all branch types)]\n\t[optional: -i to enable perfect indirect-branch prediction]\n\t[optional: -P to enable stride prefetcher in L1D]\n\t[optional: -f <pipeline_fill_latency>]\n\t[optional: -M <num_ldst_lanes>\n\t[optional: -A <num_alu_lanes>\n\t[optional: -F <fetch_width>,<fetch_num_branch>,<fetch_stop_at_indirect>,<fetch_stop_at_taken>,<fetch_model_icache>]\n\t[optional: -I <log2_ic_size>,<ic_assoc>,<ic_blocksize>]\n\t[optional: -D <log2_L1_size>,<L1_assoc>,<L1_blocksize>,<L1_latency>,<log2_L2_size>,<L2_assoc>,<L2_blocksize>,<L2_latency>,<log2_L3_size>,<L3_assoc>,<L3_blocksize>,<L3_latency>,<main_memory_latency>]\n\t[optional: -w <window_size>]\n\t[REQUIRED: .gz trace file]\n\t[optional: contestant's arguments]\n", argv[0]);
      printf("usage:\t%s\n"
-             //"\t[optional: -v to enable value prediction]\n", 
-             //"\t[optional: -p to enable perfect value prediction (if -v also specified)]\n",
-             "\t[optional: -d to enable perfect data cache]\n"
-             "\t[optional: -b to enable perfect branch prediction (all branch types)]\n"
-             // "\t[optional: -i to enable perfect indirect-branch prediction]\n"
-             "\t[optional: -P to enable stride prefetcher in L1D]\n"
-             // "\t[optional: -f <pipeline_fill_latency>]\n"
-             "\t[optional: -M <num_ldst_lanes>\n"
-             "\t[optional: -A <num_alu_lanes>\n"
-             "\t[optional: -F <fetch_width>,<fetch_num_branch>,<fetch_stop_at_indirect>,<fetch_stop_at_taken>,<fetch_model_icache>]\n"
-             "\t[optional: -I <log2_ic_size>,<ic_assoc>,<ic_blocksize>]\n"
-             "\t[optional: -D <log2_L1_size>,<L1_assoc>,<L1_blocksize>,<L1_latency>,<log2_L2_size>,<L2_assoc>,<L2_blocksize>,<L2_latency>,<log2_L3_size>,<L3_assoc>,<L3_blocksize>,<L3_latency>,<main_memory_latency>]\n"
-             "\t[optional: -w <window_size>]\n"
-             "\t[optional: -E <epoch_size_insts> to enable dumping per-epoch conditional branch info\n"
-             "\t[REQUIRED: .gz trace file]\n", argv[0]);
+            "\t[optional: -d to enable perfect data cache]\n"
+            "\t[optional: -b to enable perfect branch prediction (all branch types)]\n"
+            "\t[optional: -P to enable stride prefetcher in L1D]\n"
+            "\t[optional: -pred <tage-sc-l|onebit|twobit> to select branch predictor]\n"
+            "\t[REQUIRED: .gz trace file]\n", argv[0]);
      exit(0);
   }
 }

@@ -32,8 +32,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bp.h"
 #include "cbp.h"
 #include "parameters.h"
-
-#include "parameters.h"
+#include "../cond_branch_predictor_interface.h"
+#include "predictor_type.h"
+#include "../onebit_predictor.h"
+#include "../twobit_predictor.h"
 
 bp_t::bp_t()
 {
@@ -80,39 +82,40 @@ bool bp_t::predict(uint64_t seq_no, uint8_t piece, InstClass inst_class, uint64_
    if (inst_class == InstClass::condBranchInstClass)
    {
       // CONDITIONAL BRANCH
-
       // Determine the actual taken/not-taken outcome.
       taken = (next_pc != (pc + 4));
-
-      // Make prediction.
-      //pred_taken= TAGESCL->GetPrediction (pc);
-      pred_taken = get_cond_dir_prediction (seq_no, piece, pc, pred_cycle);
-      
-      // Determine if mispredicted or not.
-      misp = (pred_taken != taken);
-      
-      if(MISP_REDUCTION_PERC != 0 && misp)
-      {
-          const bool flip_mispred = (MISP_REDUCTION_PERC == 100) ? true : (static_cast<uint64_t>(rand_r(&mispred_correction_seed)%100) < MISP_REDUCTION_PERC);
-          if(flip_mispred)
-          {
-              misp = false;
-              pred_taken =  taken;
-          }
+      // If one-bit predictor is selected, use only it for prediction and update
+      if (get_selected_predictor() == PredictorType::PRED_ONEBIT) {
+         pred_taken = onebit_predictor_predict((uint32_t)pc);
+         misp = (pred_taken != taken);
+         onebit_predictor_train((uint32_t)pc, taken);
+         // Update measurements for one-bit predictor only
+      } else if (get_selected_predictor() == PredictorType::PRED_TWOBIT) {
+         pred_taken = twobit_predictor_predict((uint32_t)pc);
+         misp = (pred_taken != taken);
+         twobit_predictor_train((uint32_t)pc, taken);
+         // Update measurements for two-bit predictor only
+         meas_conddir_n_per_epoch.back()++;
+         meas_conddir_m_per_epoch.back() += misp;
+      } else {
+         // Default: TAGE logic
+         pred_taken = get_cond_dir_prediction (seq_no, piece, pc, pred_cycle);
+         misp = (pred_taken != taken);
+         if(MISP_REDUCTION_PERC != 0 && misp)
+         {
+             const bool flip_mispred = (MISP_REDUCTION_PERC == 100) ? true : (static_cast<uint64_t>(rand_r(&mispred_correction_seed)%100) < MISP_REDUCTION_PERC);
+             if(flip_mispred)
+             {
+                 misp = false;
+                 pred_taken =  taken;
+             }
+         }
+         // OOO Update Option
+         spec_update(seq_no, piece, pc, inst_class, taken, pred_taken, next_pc);
+         // Update measurements.
+         meas_conddir_n_per_epoch.back()++;
+         meas_conddir_m_per_epoch.back() += misp;
       }
-      
-      /* A. Seznec: uodate TAGE-SC-L*/
-      //TAGESCL-> UpdatePredictor (pc , 1,  taken, pred_taken, next_pc);
-      //UpdateCondDirPredictor (pc , 1,  taken, pred_taken, next_pc);
- 
-      //// InOrder Update Option
-      //spec_update(seq_no, piece, pc, inst_class, taken, pred_taken, next_pc);
-      //temp_predictor_update_hook(seq_no, piece, pc, taken,pred_taken, next_pc);
-      // OOO Update Option
-      spec_update(seq_no, piece, pc, inst_class, taken, pred_taken, next_pc);
-      // Update measurements.
-      meas_conddir_n_per_epoch.back()++;
-      meas_conddir_m_per_epoch.back() += misp;
    }
    else if (inst_class == InstClass::uncondDirectBranchInstClass || inst_class == InstClass::callDirectInstClass) {
       // CALL OR JUMP DIRECT
@@ -125,7 +128,7 @@ bool bp_t::predict(uint64_t seq_no, uint8_t piece, InstClass inst_class, uint64_
       /* A. Seznec: update branch  histories for TAGE-SC-L and ITTAGE */
       //TAGESCL->TrackOtherInst(pc , 0,  true,next_pc);
       //TrackOtherInst(pc , 0,  true,next_pc);
-      spec_update(seq_no, piece, pc, inst_class, true/*taken*/, true/*pred_taken*/, next_pc);
+         spec_update(seq_no, piece, pc, inst_class, true/*taken*/, true/*pred_taken*/, next_pc);
       if(!PERFECT_INDIRECT_PRED)
       {
           ITTAGE->TrackOtherInst(pc , next_pc);
@@ -161,7 +164,7 @@ bool bp_t::predict(uint64_t seq_no, uint8_t piece, InstClass inst_class, uint64_
          meas_jumpret_m_per_epoch.back() += is_ret && misp;
       }
 
-      spec_update(seq_no, piece, pc, inst_class, true/*taken*/, true/*pred_taken*/, next_pc);
+         spec_update(seq_no, piece, pc, inst_class, true/*taken*/, true/*pred_taken*/, next_pc);
       /* A. Seznec: update history for TAGE-SC-L */
       //TAGESCL->TrackOtherInst(pc , 2,  true,next_pc);
       //TrackOtherInst(pc , 2,  true,next_pc);
