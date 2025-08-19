@@ -62,21 +62,27 @@ int parseargs(int argc, char ** argv)
      {
         i++;
         if (i < argc) {
-         if (!strcmp(argv[i], "tage-sc-l")) {
-            predictor_type = PredictorType::PRED_TAGE_SC_L;
-         } else if (!strcmp(argv[i], "onebit")) {
-            predictor_type = PredictorType::PRED_ONEBIT;
-         } else if (!strcmp(argv[i], "twobit")) {
-            predictor_type = PredictorType::PRED_TWOBIT;
-         } else if (!strcmp(argv[i], "correlating")) {
-            predictor_type = PredictorType::PRED_CORRELATING;
-         } else {
-            printf("Unknown predictor type: %s. Use 'tage-sc-l', 'onebit', 'twobit', or 'correlating'.\n", argv[i]);
-            exit(1);
-         }
+            if (!strcmp(argv[i], "tage-sc-l")) {
+                predictor_type = PredictorType::PRED_TAGE_SC_L;
+            } else if (!strcmp(argv[i], "onebit")) {
+                predictor_type = PredictorType::PRED_ONEBIT;
+            } else if (!strcmp(argv[i], "twobit")) {
+                predictor_type = PredictorType::PRED_TWOBIT;
+            } else if (!strcmp(argv[i], "correlating")) {
+                predictor_type = PredictorType::PRED_CORRELATING;
+            } else if (!strcmp(argv[i], "local")) {
+                predictor_type = PredictorType::PRED_LOCAL;
+            } else if (!strcmp(argv[i], "gshare")) {
+                predictor_type = PredictorType::PRED_GSHARE;
+            } else if (!strcmp(argv[i], "tournament")) {
+                predictor_type = PredictorType::PRED_TOURNAMENT;
+            } else {
+                printf("Unknown predictor type: %s. Use 'tage-sc-l', 'onebit', 'twobit', 'correlating', 'local', 'gshare', or 'tournament'.\n", argv[i]);
+                exit(1);
+            }
             i++;
         } else {
-            printf("Usage: -pred <tage-sc-l|onebit|twobit|correlating>\n");
+            printf("Usage: -pred <tage-sc-l|onebit|twobit|correlating|local|gshare|tournament>\n");
             exit(1);
         }
      }
@@ -284,7 +290,7 @@ int parseargs(int argc, char ** argv)
             "\t[optional: -d to enable perfect data cache]\n"
             "\t[optional: -b to enable perfect branch prediction (all branch types)]\n"
             "\t[optional: -P to enable stride prefetcher in L1D]\n"
-            "\t[optional: -pred <tage-sc-l|onebit|twobit|correlating> to select branch predictor]\n"
+            "\t[optional: -pred <tage-sc-l|onebit|twobit|correlating|local|gshare> to select branch predictor]\n"
             "\t[REQUIRED: .gz trace file]\n", argv[0]);
      exit(0);
   }

@@ -37,6 +37,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../onebit_predictor.h"
 #include "../twobit_predictor.h"
 #include "../correlating_predictor.h"
+#include "../local_predictor.h"
+#include "../gshare_predictor.h"
+#include "../tournament_predictor.h"
 
 bp_t::bp_t()
 {
@@ -98,6 +101,20 @@ bool bp_t::predict(uint64_t seq_no, uint8_t piece, InstClass inst_class, uint64_
          misp = (pred_taken != taken);
          correlating_predictor_train((uint32_t)pc, taken);
          // Update measurements for correlating predictor only
+         meas_conddir_n_per_epoch.back()++;
+         meas_conddir_m_per_epoch.back() += misp;
+      } else if (get_selected_predictor() == PredictorType::PRED_LOCAL) {
+         pred_taken = local_predictor_predict((uint32_t)pc);
+         misp = (pred_taken != taken);
+         local_predictor_train((uint32_t)pc, taken);
+         // Update measurements for local predictor only
+         meas_conddir_n_per_epoch.back()++;
+         meas_conddir_m_per_epoch.back() += misp;
+      } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
+         pred_taken = gshare_predictor_predict((uint32_t)pc);
+         misp = (pred_taken != taken);
+         gshare_predictor_train((uint32_t)pc, taken);
+         // Update measurements for gshare predictor only
          meas_conddir_n_per_epoch.back()++;
          meas_conddir_m_per_epoch.back() += misp;
       } else {

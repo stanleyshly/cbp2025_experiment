@@ -27,6 +27,10 @@
 #include "onebit_predictor.h"
 #include "twobit_predictor.h"
 #include "correlating_predictor.h"
+#include "local_predictor.h"
+#include "gshare_predictor.h"
+#include "tournament_predictor.h"
+#include "predictor_config.h"
 
 void select_predictor(PredictorType pt) {
     selected_predictor = pt;
@@ -41,15 +45,37 @@ void select_predictor(PredictorType pt) {
 //
 void beginCondDirPredictor()
 {
+    // Load dynamic configuration from environment variables
+    load_config_from_env();
+    
+    // Print configuration if debug mode
+    if (std::getenv("PRINT_PREDICTOR_CONFIG")) {
+        print_config();
+    }
+    
     // setup predictors
     cbp2016_tage_sc_l.setup();
     cond_predictor_impl.setup();
     if (get_selected_predictor() == PredictorType::PRED_ONEBIT) {
-        onebit_predictor_init(21); // ~2M entries = ~2MB storage, but only 1 bit used per byte (~256KB effective) to match TAGE-SC-L 192KB
+        onebit_predictor_init(g_predictor_config.onebit_table_bits);
     } else if (get_selected_predictor() == PredictorType::PRED_TWOBIT) {
-        twobit_predictor_init(20); // ~1M entries = ~1MB storage, but only 2 bits used per byte (~256KB effective) to match TAGE-SC-L 192KB
+        twobit_predictor_init(g_predictor_config.twobit_table_bits);
     } else if (get_selected_predictor() == PredictorType::PRED_CORRELATING) {
-        correlating_predictor_init(10, 7, 2); // 10 PC bits + 7 history bits = 17 bits = 131072 entries, 2-bit counters = 128KB storage
+        correlating_predictor_init(g_predictor_config.correlating_pc_bits, 
+                                   g_predictor_config.correlating_history_bits, 
+                                   g_predictor_config.correlating_counter_bits);
+    } else if (get_selected_predictor() == PredictorType::PRED_LOCAL) {
+        local_predictor_init(g_predictor_config.local_lht_bits, 
+                            g_predictor_config.local_history_bits, 
+                            g_predictor_config.local_pht_bits);
+    } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
+        gshare_predictor_init(g_predictor_config.gshare_table_bits, 
+                             g_predictor_config.gshare_history_bits);
+    } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
+        tournament_predictor_init(g_predictor_config.tournament_selector_bits, 
+                                 g_predictor_config.tournament_bimodal_bits,
+                                 g_predictor_config.tournament_gshare_table_bits, 
+                                 g_predictor_config.tournament_gshare_history_bits);
     }
 }
 
@@ -78,6 +104,12 @@ bool get_cond_dir_prediction(uint64_t seq_no, uint8_t piece, uint64_t pc, const 
         return twobit_predictor_predict((uint32_t)pc);
     } else if (get_selected_predictor() == PredictorType::PRED_CORRELATING) {
         return correlating_predictor_predict((uint32_t)pc);
+    } else if (get_selected_predictor() == PredictorType::PRED_LOCAL) {
+        return local_predictor_predict((uint32_t)pc);
+    } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
+        return gshare_predictor_predict((uint32_t)pc);
+    } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
+        return tournament_predictor_predict((uint32_t)pc);
     }
     const bool tage_sc_l_pred =  cbp2016_tage_sc_l.predict(seq_no, piece, pc);
     const bool my_prediction = cond_predictor_impl.predict(seq_no, piece, pc, tage_sc_l_pred);
@@ -128,6 +160,10 @@ void spec_update(uint64_t seq_no, uint8_t piece, uint64_t pc, InstClass inst_cla
             twobit_predictor_train((uint32_t)pc, resolve_dir);
         } else if (get_selected_predictor() == PredictorType::PRED_CORRELATING) {
             correlating_predictor_train((uint32_t)pc, resolve_dir);
+        } else if (get_selected_predictor() == PredictorType::PRED_LOCAL) {
+            local_predictor_train((uint32_t)pc, resolve_dir);
+        } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
+            gshare_predictor_train((uint32_t)pc, resolve_dir);
         } else {
             cbp2016_tage_sc_l.history_update(seq_no, piece, pc, br_type, pred_dir, resolve_dir, next_pc);
             cond_predictor_impl.history_update(seq_no, piece, pc, resolve_dir, next_pc);
@@ -184,6 +220,12 @@ void notify_instr_execute_resolve(uint64_t seq_no, uint8_t piece, uint64_t pc, c
                 twobit_predictor_train((uint32_t)pc, _resolve_dir);
             } else if (get_selected_predictor() == PredictorType::PRED_CORRELATING) {
                 correlating_predictor_train((uint32_t)pc, _resolve_dir);
+            } else if (get_selected_predictor() == PredictorType::PRED_LOCAL) {
+                local_predictor_train((uint32_t)pc, _resolve_dir);
+            } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
+                gshare_predictor_train((uint32_t)pc, _resolve_dir);
+            } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
+                tournament_predictor_train((uint32_t)pc, _resolve_dir);
             } else {
                 cbp2016_tage_sc_l.update(seq_no, piece, pc, _resolve_dir, pred_dir, _next_pc);
                 cond_predictor_impl.update(seq_no, piece, pc, _resolve_dir, pred_dir, _next_pc);
@@ -221,6 +263,12 @@ void endCondDirPredictor ()
         twobit_predictor_cleanup();
     } else if (get_selected_predictor() == PredictorType::PRED_CORRELATING) {
         correlating_predictor_cleanup();
+    } else if (get_selected_predictor() == PredictorType::PRED_LOCAL) {
+        local_predictor_cleanup();
+    } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
+        gshare_predictor_cleanup();
+    } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
+        tournament_predictor_cleanup();
     } else {
         cbp2016_tage_sc_l.terminate();
         cond_predictor_impl.terminate();

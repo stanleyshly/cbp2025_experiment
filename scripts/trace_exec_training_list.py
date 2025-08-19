@@ -17,8 +17,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--trace_dir', help='path to trace directory', required= True)
 parser.add_argument('--results_dir', help='path to results directory', required= True)
 
-parser.add_argument('--predictors', help='comma-separated list of predictors to test (tage-sc-l,onebit,twobit,correlating)', default='tage-sc-l')
-parser.add_argument('--sweep_predictors', action='store_true', help='sweep all available predictors (tage-sc-l,onebit,twobit,correlating)')
+parser.add_argument('--predictors', help='comma-separated list of predictors to test (tage-sc-l,onebit,twobit,correlating,local,gshare)', default='tage-sc-l')
+parser.add_argument('--sweep_predictors', action='store_true', help='sweep all available predictors (tage-sc-l,onebit,twobit,correlating,local,gshare)')
 
 args = parser.parse_args()
 trace_dir = Path(args.trace_dir)
@@ -27,12 +27,12 @@ results_dir = Path(args.results_dir)
 # Parse predictor options
 
 if args.sweep_predictors:
-    predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating']
+    predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament']
 else:
     predictors = [p.strip() for p in args.predictors.split(',')]
 
 # Validate predictor names
-valid_predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating']
+valid_predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament']
 for pred in predictors:
     if pred not in valid_predictors:
         print(f"Error: '{pred}' is not a valid predictor. Valid options: {valid_predictors}")
@@ -316,12 +316,21 @@ if __name__ == '__main__':
                 baseline_subset = df[df['Predictor'] == baseline_pred]
                 current_subset = df[df['Predictor'] == pred]
                 if not baseline_subset.empty and not current_subset.empty:
-                    baseline_mpki = baseline_subset['50PercMPKI'].astype(float).mean()
-                    current_mpki = current_subset['50PercMPKI'].astype(float).mean()
-                    mpki_improvement = ((baseline_mpki - current_mpki) / baseline_mpki) * 100
+                    # Calculate instruction-weighted metrics for baseline
+                    baseline_total_instrs = baseline_subset['50PercInstr'].astype(float).sum()
+                    baseline_total_mispreds = baseline_subset['50PercMispBr'].astype(float).sum()
+                    baseline_total_cycles = baseline_subset['50PercCycles'].astype(float).sum()
+                    baseline_mpki = (baseline_total_mispreds / baseline_total_instrs) * 1000
+                    baseline_ipc = baseline_total_instrs / baseline_total_cycles
                     
-                    baseline_ipc = baseline_subset['50PercIPC'].astype(float).mean()
-                    current_ipc = current_subset['50PercIPC'].astype(float).mean()
+                    # Calculate instruction-weighted metrics for current predictor
+                    current_total_instrs = current_subset['50PercInstr'].astype(float).sum()
+                    current_total_mispreds = current_subset['50PercMispBr'].astype(float).sum()
+                    current_total_cycles = current_subset['50PercCycles'].astype(float).sum()
+                    current_mpki = (current_total_mispreds / current_total_instrs) * 1000
+                    current_ipc = current_total_instrs / current_total_cycles
+                    
+                    mpki_improvement = ((baseline_mpki - current_mpki) / baseline_mpki) * 100
                     ipc_improvement = ((current_ipc - baseline_ipc) / baseline_ipc) * 100
                     
                     print(f'{pred} vs {baseline_pred}:')

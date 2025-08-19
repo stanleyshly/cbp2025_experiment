@@ -28,8 +28,8 @@ void twobit_predictor_init(int table_bits) {
     n_bits = 2; // default, can be set externally if needed
     uint32_t size = 1 << bits;
     table = (uint8_t*)malloc(size * sizeof(uint8_t));
-    // Initialize to weakly not taken
-    for (uint32_t i = 0; i < size; i++) table[i] = 0;
+    // Initialize to weakly not taken (neutral, can adapt either direction quickly)
+    for (uint32_t i = 0; i < size; i++) table[i] = WEAK_NOT_TAKEN;
     mask = size - 1;
     max_val = (1 << n_bits) - 1;
     threshold = (1 << (n_bits - 1));

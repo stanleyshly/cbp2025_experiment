@@ -19,7 +19,7 @@ void correlating_predictor_init(int table_bits, int hist_bits, int nbits) {
     n_bits = nbits;
     uint32_t size = 1 << (bits + history_bits);
     table = (uint8_t*)malloc(size * sizeof(uint8_t));
-    for (uint32_t i = 0; i < size; i++) table[i] = 0;
+    for (uint32_t i = 0; i < size; i++) table[i] = 1; // Initialize to WEAK_NOT_TAKEN
     mask = size - 1;
     max_val = (1 << n_bits) - 1;
     threshold = (1 << (n_bits - 1));

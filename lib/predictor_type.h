@@ -9,7 +9,8 @@ enum class PredictorType {
     PRED_TAGE,
     PRED_ONEBIT,
     PRED_TWOBIT,
-    PRED_CORRELATING
+    PRED_CORRELATING,
+    PRED_LOCAL
 };
 
 // Static variable to hold the selected predictor
