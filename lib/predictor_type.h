@@ -8,7 +8,8 @@ enum class PredictorType {
     PRED_TOURNAMENT,
     PRED_TAGE,
     PRED_ONEBIT,
-    PRED_TWOBIT
+    PRED_TWOBIT,
+    PRED_CORRELATING
 };
 
 // Static variable to hold the selected predictor

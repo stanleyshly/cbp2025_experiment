@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "predictor_type.h"
 #include "../onebit_predictor.h"
 #include "../twobit_predictor.h"
+#include "../correlating_predictor.h"
 
 bp_t::bp_t()
 {
@@ -90,11 +91,13 @@ bool bp_t::predict(uint64_t seq_no, uint8_t piece, InstClass inst_class, uint64_
          misp = (pred_taken != taken);
          onebit_predictor_train((uint32_t)pc, taken);
          // Update measurements for one-bit predictor only
-      } else if (get_selected_predictor() == PredictorType::PRED_TWOBIT) {
-         pred_taken = twobit_predictor_predict((uint32_t)pc);
+         meas_conddir_n_per_epoch.back()++;
+         meas_conddir_m_per_epoch.back() += misp;
+      } else if (get_selected_predictor() == PredictorType::PRED_CORRELATING) {
+         pred_taken = correlating_predictor_predict((uint32_t)pc);
          misp = (pred_taken != taken);
-         twobit_predictor_train((uint32_t)pc, taken);
-         // Update measurements for two-bit predictor only
+         correlating_predictor_train((uint32_t)pc, taken);
+         // Update measurements for correlating predictor only
          meas_conddir_n_per_epoch.back()++;
          meas_conddir_m_per_epoch.back() += misp;
       } else {

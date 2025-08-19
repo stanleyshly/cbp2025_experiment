@@ -16,21 +16,23 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument('--trace_dir', help='path to trace directory', required= True)
 parser.add_argument('--results_dir', help='path to results directory', required= True)
-parser.add_argument('--predictors', help='comma-separated list of predictors to test (tage-sc-l,onebit,twobit)', default='tage-sc-l')
-parser.add_argument('--sweep_predictors', action='store_true', help='sweep all available predictors (tage-sc-l,onebit,twobit)')
+
+parser.add_argument('--predictors', help='comma-separated list of predictors to test (tage-sc-l,onebit,twobit,correlating)', default='tage-sc-l')
+parser.add_argument('--sweep_predictors', action='store_true', help='sweep all available predictors (tage-sc-l,onebit,twobit,correlating)')
 
 args = parser.parse_args()
 trace_dir = Path(args.trace_dir)
 results_dir = Path(args.results_dir)
 
 # Parse predictor options
+
 if args.sweep_predictors:
-    predictors = ['tage-sc-l', 'onebit', 'twobit']
+    predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating']
 else:
     predictors = [p.strip() for p in args.predictors.split(',')]
 
 # Validate predictor names
-valid_predictors = ['tage-sc-l', 'onebit', 'twobit']
+valid_predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating']
 for pred in predictors:
     if pred not in valid_predictors:
         print(f"Error: '{pred}' is not a valid predictor. Valid options: {valid_predictors}")

@@ -64,6 +64,23 @@ The script executes all the traces inside the trace directory and creates a dire
 
 The script also parses all the logs to dump a csv with relevant stats.
 
+## Running Predictor Sweeps
+
+To sweep all predictors (tage-sc-l, onebit, twobit, correlating) on a set of traces:
+
+```
+python3 scripts/trace_exec_training_list.py --trace_dir <path_to_traces> --results_dir <path_to_results> --sweep_predictors
+```
+
+To sweep a subset of predictors (e.g., only twobit and correlating):
+
+```
+python3 scripts/trace_exec_training_list.py --trace_dir <path_to_traces> --results_dir <path_to_results> --predictors twobit,correlating
+```
+
+Replace `<path_to_traces>` and `<path_to_results>` with your actual directories.
+
+
 ## Getting Traces
 
 [Link to Training Set- 105 traces](https://drive.google.com/drive/folders/10CL13RGDW3zn-Dx7L0ineRvl7EpRsZDW)
