@@ -2,6 +2,8 @@
 #define _PREDICTOR_H_
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <cassert>
 
 struct SampleHist
 {

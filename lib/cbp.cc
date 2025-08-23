@@ -76,13 +76,23 @@ int parseargs(int argc, char ** argv)
                 predictor_type = PredictorType::PRED_GSHARE;
             } else if (!strcmp(argv[i], "tournament")) {
                 predictor_type = PredictorType::PRED_TOURNAMENT;
+            } else if (!strcmp(argv[i], "tage")) {
+                predictor_type = PredictorType::PRED_TAGE;
+            // REMOVED: tage-clean predictor due to implementation issues
+            // } else if (!strcmp(argv[i], "tage-clean")) {
+            //     predictor_type = PredictorType::PRED_TAGE_CLEAN;
+            // REMOVED: tage-incremental due to symbol conflicts
+            // } else if (!strcmp(argv[i], "tage-incremental")) {
+            //     predictor_type = PredictorType::PRED_TAGE_INCREMENTAL;
+            } else if (!strcmp(argv[i], "perceptron")) {
+                predictor_type = PredictorType::PRED_PERCEPTRON;
             } else {
-                printf("Unknown predictor type: %s. Use 'tage-sc-l', 'onebit', 'twobit', 'correlating', 'local', 'gshare', or 'tournament'.\n", argv[i]);
+                printf("Unknown predictor type: %s. Use 'tage-sc-l', 'tage', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament', or 'perceptron'.\n", argv[i]);
                 exit(1);
             }
             i++;
         } else {
-            printf("Usage: -pred <tage-sc-l|onebit|twobit|correlating|local|gshare|tournament>\n");
+            printf("Usage: -pred <tage-sc-l|tage|onebit|twobit|correlating|local|gshare|tournament|perceptron>\n");
             exit(1);
         }
      }

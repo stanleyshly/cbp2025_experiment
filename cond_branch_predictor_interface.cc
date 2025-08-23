@@ -30,6 +30,9 @@
 #include "local_predictor.h"
 #include "gshare_predictor.h"
 #include "tournament_predictor.h"
+#include "tage_predictor.h"
+#include "perceptron_predictor.h"
+// Removed incremental TAGE - too messy with symbol conflicts
 #include "predictor_config.h"
 
 void select_predictor(PredictorType pt) {
@@ -76,6 +79,14 @@ void beginCondDirPredictor()
                                  g_predictor_config.tournament_bimodal_bits,
                                  g_predictor_config.tournament_gshare_table_bits, 
                                  g_predictor_config.tournament_gshare_history_bits);
+    } else if (get_selected_predictor() == PredictorType::PRED_TAGE) {
+        tage_predictor_init();
+    } else if (get_selected_predictor() == PredictorType::PRED_PERCEPTRON) {
+        perceptron_predictor_init(g_predictor_config.perceptron_table_bits, 
+                                  g_predictor_config.perceptron_history_length, 
+                                  g_predictor_config.perceptron_weight_bits, 
+                                  g_predictor_config.perceptron_threshold);
+    // REMOVED: PRED_TAGE_INCREMENTAL - symbol conflicts
     }
 }
 
@@ -110,6 +121,13 @@ bool get_cond_dir_prediction(uint64_t seq_no, uint8_t piece, uint64_t pc, const 
         return gshare_predictor_predict((uint32_t)pc);
     } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
         return tournament_predictor_predict((uint32_t)pc);
+    } else if (get_selected_predictor() == PredictorType::PRED_TAGE) {
+        return tage_predictor_predict((uint32_t)pc);
+    } else if (get_selected_predictor() == PredictorType::PRED_PERCEPTRON) {
+        return perceptron_predictor_predict((uint32_t)pc);
+    // REMOVED: PRED_TAGE_INCREMENTAL - symbol conflicts
+    } else if (get_selected_predictor() == PredictorType::PRED_TAGE_SC_L) {
+        return cbp2016_tage_sc_l.predict(seq_no, piece, pc);
     }
     const bool tage_sc_l_pred =  cbp2016_tage_sc_l.predict(seq_no, piece, pc);
     const bool my_prediction = cond_predictor_impl.predict(seq_no, piece, pc, tage_sc_l_pred);
@@ -164,8 +182,17 @@ void spec_update(uint64_t seq_no, uint8_t piece, uint64_t pc, InstClass inst_cla
             local_predictor_train((uint32_t)pc, resolve_dir);
         } else if (get_selected_predictor() == PredictorType::PRED_GSHARE) {
             gshare_predictor_train((uint32_t)pc, resolve_dir);
-        } else {
+        } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
+            tournament_predictor_train((uint32_t)pc, resolve_dir);
+        } else if (get_selected_predictor() == PredictorType::PRED_TAGE) {
+            tage_predictor_train((uint32_t)pc, resolve_dir);
+        } else if (get_selected_predictor() == PredictorType::PRED_PERCEPTRON) {
+            perceptron_predictor_train((uint32_t)pc, resolve_dir);
+            perceptron_predictor_update_history(resolve_dir);
+        // REMOVED: PRED_TAGE_INCREMENTAL - symbol conflicts
+        } else if (get_selected_predictor() == PredictorType::PRED_TAGE_SC_L) {
             cbp2016_tage_sc_l.history_update(seq_no, piece, pc, br_type, pred_dir, resolve_dir, next_pc);
+        } else {
             cond_predictor_impl.history_update(seq_no, piece, pc, resolve_dir, next_pc);
         }
     }
@@ -226,8 +253,15 @@ void notify_instr_execute_resolve(uint64_t seq_no, uint8_t piece, uint64_t pc, c
                 gshare_predictor_train((uint32_t)pc, _resolve_dir);
             } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
                 tournament_predictor_train((uint32_t)pc, _resolve_dir);
-            } else {
+            } else if (get_selected_predictor() == PredictorType::PRED_TAGE) {
+                tage_predictor_train((uint32_t)pc, _resolve_dir);
+            } else if (get_selected_predictor() == PredictorType::PRED_PERCEPTRON) {
+                perceptron_predictor_train((uint32_t)pc, _resolve_dir);
+                perceptron_predictor_update_history(_resolve_dir);
+            // REMOVED: PRED_TAGE_INCREMENTAL - symbol conflicts
+            } else if (get_selected_predictor() == PredictorType::PRED_TAGE_SC_L) {
                 cbp2016_tage_sc_l.update(seq_no, piece, pc, _resolve_dir, pred_dir, _next_pc);
+            } else {
                 cond_predictor_impl.update(seq_no, piece, pc, _resolve_dir, pred_dir, _next_pc);
             }
         }
@@ -269,8 +303,14 @@ void endCondDirPredictor ()
         gshare_predictor_cleanup();
     } else if (get_selected_predictor() == PredictorType::PRED_TOURNAMENT) {
         tournament_predictor_cleanup();
-    } else {
+    } else if (get_selected_predictor() == PredictorType::PRED_TAGE) {
+        tage_predictor_cleanup();
+    } else if (get_selected_predictor() == PredictorType::PRED_PERCEPTRON) {
+        perceptron_predictor_cleanup();
+    // REMOVED: PRED_TAGE_INCREMENTAL - symbol conflicts
+    } else if (get_selected_predictor() == PredictorType::PRED_TAGE_SC_L) {
         cbp2016_tage_sc_l.terminate();
+    } else {
         cond_predictor_impl.terminate();
     }
 }

@@ -17,8 +17,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--trace_dir', help='path to trace directory', required= True)
 parser.add_argument('--results_dir', help='path to results directory', required= True)
 
-parser.add_argument('--predictors', help='comma-separated list of predictors to test (tage-sc-l,onebit,twobit,correlating,local,gshare)', default='tage-sc-l')
-parser.add_argument('--sweep_predictors', action='store_true', help='sweep all available predictors (tage-sc-l,onebit,twobit,correlating,local,gshare)')
+parser.add_argument('--predictors', help='comma-separated list of predictors to test (tage-sc-l,tage,onebit,twobit,correlating,local,gshare,perceptron)', default='tage-sc-l,tage,tournament,local,onebit,twobit')
+parser.add_argument('--sweep_predictors', action='store_true', help='sweep all available predictors (tage-sc-l,tage,onebit,twobit,correlating,local,gshare,tournament,perceptron)')
 
 args = parser.parse_args()
 trace_dir = Path(args.trace_dir)
@@ -27,12 +27,12 @@ results_dir = Path(args.results_dir)
 # Parse predictor options
 
 if args.sweep_predictors:
-    predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament']
+    predictors = ['tage-sc-l', 'tage', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament', 'perceptron']
 else:
     predictors = [p.strip() for p in args.predictors.split(',')]
 
 # Validate predictor names
-valid_predictors = ['tage-sc-l', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament']
+valid_predictors = ['tage-sc-l', 'tage', 'onebit', 'twobit', 'correlating', 'local', 'gshare', 'tournament', 'perceptron']
 for pred in predictors:
     if pred not in valid_predictors:
         print(f"Error: '{pred}' is not a valid predictor. Valid options: {valid_predictors}")
@@ -226,15 +226,24 @@ def execute_trace(trace_pred_tuple):
         print(f'Begin processing run:{my_run_name} with predictor:{predictor}')
         try:
             begin_time = time.time()
-            run_op = subprocess.check_output(exec_cmd, shell=True, text=True)
+            result = subprocess.run(exec_cmd, shell=True, capture_output=True, text=True, timeout=300)
             end_time = time.time()
             exec_time = end_time - begin_time
-            with open(op_file, "w") as text_file:
-                print(f"CMD:{exec_cmd}", file=text_file)
-                print(f"{run_op}", file=text_file)
-                print(f"ExecTime = {exec_time}", file=text_file)
-        except:
-            print(f'Run: {my_run_name} with predictor:{predictor} failed')
+            
+            if result.returncode == 0:
+                with open(op_file, "w") as text_file:
+                    print(f"CMD:{exec_cmd}", file=text_file)
+                    print(f"{result.stdout}", file=text_file)
+                    print(f"ExecTime = {exec_time}", file=text_file)
+            else:
+                print(f'Run: {my_run_name} with predictor:{predictor} failed - returncode {result.returncode}')
+                print(f'  Error: {result.stderr[:200]}')
+                pass_status = False
+        except subprocess.TimeoutExpired:
+            print(f'Run: {my_run_name} with predictor:{predictor} timed out')
+            pass_status = False
+        except Exception as e:
+            print(f'Run: {my_run_name} with predictor:{predictor} failed with exception: {e}')
             pass_status = False
     return(pass_status, my_trace_path, op_file, my_run_name, predictor)
 
@@ -249,8 +258,10 @@ if __name__ == '__main__':
     
     print(f'Total combinations to run: {len(trace_pred_combinations)} (traces: {len(my_traces)}, predictors: {len(predictors)})')
     
-    # For parallel runs:
-    with mp.Pool() as pool:
+    # For parallel runs (use all available CPU cores):
+    max_cores = mp.cpu_count()
+    print(f"Using {max_cores} CPU cores for parallel processing...")
+    with mp.Pool(processes=max_cores) as pool:
         results = pool.map(execute_trace, trace_pred_combinations)
     
     # For serial runs:

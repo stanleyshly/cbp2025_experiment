@@ -33,6 +33,12 @@ struct PredictorConfig {
     int tournament_bimodal_bits = 14;
     int tournament_gshare_table_bits = 14;
     int tournament_gshare_history_bits = 6;
+    
+    // Perceptron predictor
+    int perceptron_table_bits = 12;
+    int perceptron_history_length = 24;
+    int perceptron_weight_bits = 8;
+    int perceptron_threshold = 35;
 };
 
 // Global configuration instance
@@ -90,6 +96,20 @@ inline void load_config_from_env() {
     if (const char* val = std::getenv("TOURNAMENT_GSHARE_HISTORY_BITS")) {
         g_predictor_config.tournament_gshare_history_bits = std::atoi(val);
     }
+    
+    // Perceptron
+    if (const char* val = std::getenv("PERCEPTRON_TABLE_BITS")) {
+        g_predictor_config.perceptron_table_bits = std::atoi(val);
+    }
+    if (const char* val = std::getenv("PERCEPTRON_HISTORY_LENGTH")) {
+        g_predictor_config.perceptron_history_length = std::atoi(val);
+    }
+    if (const char* val = std::getenv("PERCEPTRON_WEIGHT_BITS")) {
+        g_predictor_config.perceptron_weight_bits = std::atoi(val);
+    }
+    if (const char* val = std::getenv("PERCEPTRON_THRESHOLD")) {
+        g_predictor_config.perceptron_threshold = std::atoi(val);
+    }
 }
 
 // Function to print current configuration
@@ -108,6 +128,9 @@ inline void print_config() {
     printf("Tournament: selector_bits=%d, bimodal_bits=%d, gshare_table_bits=%d, gshare_history_bits=%d\n",
            g_predictor_config.tournament_selector_bits, g_predictor_config.tournament_bimodal_bits,
            g_predictor_config.tournament_gshare_table_bits, g_predictor_config.tournament_gshare_history_bits);
+    printf("Perceptron: table_bits=%d, history_length=%d, weight_bits=%d, threshold=%d\n",
+           g_predictor_config.perceptron_table_bits, g_predictor_config.perceptron_history_length,
+           g_predictor_config.perceptron_weight_bits, g_predictor_config.perceptron_threshold);
     printf("===============================\n");
 }
 
