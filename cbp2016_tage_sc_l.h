@@ -189,7 +189,7 @@ class gentry            // TAGE global table entry
 #define  POWER
 //use geometric history length
 
-#define NHIST 36        // twice the number of different histories
+#define NHIST 36        // default: 36 histories
 
 #define NBANKLOW 10     // number of banks in the shared bank-interleaved for the low history lengths
 #define NBANKHIGH 20        // number of banks in the shared bank-interleaved for the  history lengths
@@ -205,8 +205,8 @@ int SizeTable[NHIST + 1];
 
 /*in practice 2 bits or 3 bits par branch: around 1200 cond. branchs*/
 
-#define MINHIST 6       //not optimized so far
-#define MAXHIST 3000
+#define MINHIST 6       // default: min history 6
+#define MAXHIST 3000    // default: max history 3000
 
 
 #define LOGG 10         /* logsize of the  banks in the  tagged TAGE tables */

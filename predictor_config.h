@@ -36,7 +36,7 @@ struct PredictorConfig {
     
     // Perceptron predictor
     int perceptron_table_bits = 12;
-    int perceptron_history_length = 24;
+    int perceptron_history_length = 64;
     int perceptron_weight_bits = 8;
     int perceptron_threshold = 35;
 };

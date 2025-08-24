@@ -7,14 +7,14 @@
 #include <math.h>
 
 // WORKING configuration that gave 0.44 MPKI
-#define NHIST 18                        // 18 history lengths (WORKING!)
 #define LOGG 10                         // Log size of banks = 1024 entries per bank
 #define LOGB 13                         // Bimodal predictor: 8192 entries  
 #define TBITS 8                         // Tag bits (base)
 #define CWIDTH 3                        // Counter width
 #define UWIDTH 2                        // Usefulness counter width  
-#define MINHIST 5                       // Minimum history length
-#define MAXHIST 1000                    // Maximum history length
+#define MINHIST 6                       // match TAGE-SC-L: min history 6
+#define MAXHIST 3000                    // match TAGE-SC-L: max history 3000
+#define NHIST 36                        // match TAGE-SC-L: 36 histories
 #define BORN 9                          // Threshold between low/high history
 #define NBANKLOW 5                      // Banks for low history
 #define NBANKHIGH 10                    // Banks for high history
